@@ -26,7 +26,34 @@
     js: document.getElementById('js'),
   };
 
-  const editors = {
+  const hasCodeMirror = typeof window.CodeMirror !== 'undefined';
+
+  function makeTextareaEditor(textarea){
+    const listeners = new Set();
+    const editor = {
+      getValue: () => textarea.value,
+      setValue: (val) => {
+        if (textarea.value === val) return;
+        textarea.value = val;
+        editor._emit('change', { origin: 'setValue' });
+      },
+      focus: () => textarea.focus(),
+      refresh: () => {},
+      setSize: () => {},
+      on: (evt, handler) => {
+        if (evt !== 'change' || typeof handler !== 'function') return;
+        listeners.add(handler);
+      },
+      _emit: (evt, info) => {
+        if (evt !== 'change') return;
+        listeners.forEach(fn => fn(editor, info));
+      },
+    };
+    textarea.addEventListener('input', () => editor._emit('change', { origin: 'user' }));
+    return editor;
+  }
+
+  const editors = hasCodeMirror ? {
     html: CodeMirror.fromTextArea(textareas.html, {
       mode: 'htmlmixed',
       theme: 'material-darker',
@@ -51,12 +78,23 @@
       tabSize: 2,
       indentUnit: 2,
     }),
+  } : {
+    html: makeTextareaEditor(textareas.html),
+    css: makeTextareaEditor(textareas.css),
+    js: makeTextareaEditor(textareas.js),
   };
 
   const editorKeys = ['html', 'css', 'js'];
   editorKeys.forEach(key => {
-    editors[key].setSize('100%', '100%');
+    if (typeof editors[key].setSize === 'function') {
+      editors[key].setSize('100%', '100%');
+    }
   });
+
+  if (!hasCodeMirror) {
+    console.warn('[NeoScope] CodeMirror nicht verfügbar. Fallback auf Standard-Textareas ohne Syntax-Highlighting.');
+  }
+
   let activeEditor = 'html';
 
   const STARTER = {
@@ -103,8 +141,8 @@ document.getElementById('clickme')?.addEventListener('click', () => {
       els.panes.forEach(p => p.classList.toggle('active', p.dataset.editor === target));
       activeEditor = target;
       requestAnimationFrame(() => {
-        editors[target].refresh();
-        editors[target].focus();
+        if (typeof editors[target].refresh === 'function') editors[target].refresh();
+        if (typeof editors[target].focus === 'function') editors[target].focus();
       });
     });
   });
@@ -140,12 +178,16 @@ document.getElementById('clickme')?.addEventListener('click', () => {
       }
     }
     if (additions){
-      const cm = editors.css;
-      cm.operation(() => {
-        const doc = cm.getDoc();
-        const end = doc.posFromIndex(doc.getValue().length);
-        doc.replaceRange(additions, end);
-      });
+      const editor = editors.css;
+      if (editor && typeof editor.operation === 'function' && editor.getDoc){
+        editor.operation(() => {
+          const doc = editor.getDoc();
+          const end = doc.posFromIndex(doc.getValue().length);
+          doc.replaceRange(additions, end);
+        });
+      } else {
+        editor.setValue(editor.getValue() + additions);
+      }
       setStatus('Auto CSS-Stubs ergänzt.');
     }
   }
@@ -445,11 +487,15 @@ ${js}
     if (toAdd.length){
       const cm = editors.css;
       const addition = toAdd.map(c => `\n\n/* Stub automatisch angelegt */\n.${c} {\n  /* TODO: Styles */\n}`).join('');
-      cm.operation(() => {
-        const doc = cm.getDoc();
-        const end = doc.posFromIndex(doc.getValue().length);
-        doc.replaceRange(addition, end);
-      });
+      if (cm && typeof cm.operation === 'function' && cm.getDoc){
+        cm.operation(() => {
+          const doc = cm.getDoc();
+          const end = doc.posFromIndex(doc.getValue().length);
+          doc.replaceRange(addition, end);
+        });
+      } else {
+        cm.setValue(cm.getValue() + addition);
+      }
       toAdd.forEach(c => autoAdded.add(c));
     }
     render();
