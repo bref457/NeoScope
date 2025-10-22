@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>NeoScope</title>
     <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css"
+      integrity="sha512-A0rTUMpOWcZH/5LiCFYl8a9kaI0s5momkGumZ5qX6Ch12yvDqOiiMHDL/95B2S/bRMyCV2wAPOQgpdnHv1g71g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material-darker.min.css"
+      integrity="sha512-OHb9rp1ZqxPVEo8r5TfnuzBx5emx8Gf3EX8gPW7USuualDv+IS9xlAgEVFjW2oON86OftHaVhAewZTxDny05UQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
   </head>
   <body>
     <header class="topbar">
@@ -39,9 +53,15 @@
           <button class="tab" data-target="js">JS</button>
         </div>
         <div class="panes">
-          <textarea id="html" class="pane active" spellcheck="false"></textarea>
-          <textarea id="css" class="pane" spellcheck="false"></textarea>
-          <textarea id="js" class="pane" spellcheck="false"></textarea>
+          <div class="pane active" data-editor="html">
+            <textarea id="html" spellcheck="false"></textarea>
+          </div>
+          <div class="pane" data-editor="css">
+            <textarea id="css" spellcheck="false"></textarea>
+          </div>
+          <div class="pane" data-editor="js">
+            <textarea id="js" spellcheck="false"></textarea>
+          </div>
         </div>
       </section>
 
@@ -59,6 +79,36 @@
       <span class="kbd">Ctrl/Cmd + S = Save · Ctrl/Cmd + Enter = Run · Ctrl/Cmd + I = Inspect</span>
     </footer>
 
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"
+      integrity="sha512-z6R5haxDT+xr3aMcMBXNIN1qNbfXDnpa9eKJeNEqXWiwxupCSvJzpuG1HsfrN7kYM/qfNwCuWHa3gwPrmT2yLQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js"
+      integrity="sha512-nP1gS0mqeiy0CvRvmTlZGLbgXhbrufi0xdH1R1FBSu3F0YyGFwCYViDzbWF3+T4/mbnsdcbLYRvMmfLfJS6lGg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"
+      integrity="sha512-LVd824JNxUirLOfT01V6L+UVl10ovfoTnENluVZ9gYE25f1G9S8AAeHxHqo3oG9c93d4pspEAGgkstFXrrHWXQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/css/css.min.js"
+      integrity="sha512-nrAg2D/BnmkzJ4/JzX8f4UP1coVMuYr4KP9qpIpi9CTfh6gvoXP/gSMbxOxAlv1iW7q8ONaSL8tA69bso3RE8A=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js"
+      integrity="sha512-xvxTIh0adwfMzF0HbiWizqoKawVvvJIDCcI1RuDprzSPTIEEn5S5x0nrRz5AON5Tr/J8PB84Pkxg9VBmKEIccA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
     <script src="app.js"></script>
   </body>
 </html>

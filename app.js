@@ -6,9 +6,6 @@
   const els = {
     tabs: $$('.tab'),
     panes: $$('.pane'),
-    html: $('#html'),
-    css: $('#css'),
-    js: $('#js'),
     frame: $('#frame'),
     console: $('#consoleOutput'),
     status: $('#status'),
@@ -22,6 +19,45 @@
     exportBtn: $('#exportBtn'),
     inspectBtn: $('#inspectBtn'),
   };
+
+  const textareas = {
+    html: document.getElementById('html'),
+    css: document.getElementById('css'),
+    js: document.getElementById('js'),
+  };
+
+  const editors = {
+    html: CodeMirror.fromTextArea(textareas.html, {
+      mode: 'htmlmixed',
+      theme: 'material-darker',
+      lineNumbers: true,
+      lineWrapping: true,
+      tabSize: 2,
+      indentUnit: 2,
+    }),
+    css: CodeMirror.fromTextArea(textareas.css, {
+      mode: 'css',
+      theme: 'material-darker',
+      lineNumbers: true,
+      lineWrapping: true,
+      tabSize: 2,
+      indentUnit: 2,
+    }),
+    js: CodeMirror.fromTextArea(textareas.js, {
+      mode: 'javascript',
+      theme: 'material-darker',
+      lineNumbers: true,
+      lineWrapping: true,
+      tabSize: 2,
+      indentUnit: 2,
+    }),
+  };
+
+  const editorKeys = ['html', 'css', 'js'];
+  editorKeys.forEach(key => {
+    editors[key].setSize('100%', '100%');
+  });
+  let activeEditor = 'html';
 
   const STARTER = {
     html: `<!-- Starte hier -->
@@ -61,8 +97,15 @@ document.getElementById('clickme')?.addEventListener('click', () => {
   // Tabs
   els.tabs.forEach(btn => {
     btn.addEventListener('click', () => {
+      const target = btn.dataset.target;
+      if (!target || target === activeEditor) return;
       els.tabs.forEach(t => t.classList.toggle('active', t === btn));
-      els.panes.forEach(p => p.classList.toggle('active', p.id === btn.dataset.target));
+      els.panes.forEach(p => p.classList.toggle('active', p.dataset.editor === target));
+      activeEditor = target;
+      requestAnimationFrame(() => {
+        editors[target].refresh();
+        editors[target].focus();
+      });
     });
   });
 
@@ -86,8 +129,8 @@ document.getElementById('clickme')?.addEventListener('click', () => {
   }
   function ensureCSSStubs(){
     if (!els.autoStubs.checked) return;
-    const html = els.html.value;
-    const css = els.css.value;
+    const html = editors.html.getValue();
+    const css = editors.css.getValue();
     const classes = extractClassesFromHTML(html);
     let additions = '';
     for (const c of classes){
@@ -97,15 +140,21 @@ document.getElementById('clickme')?.addEventListener('click', () => {
       }
     }
     if (additions){
-      els.css.value += additions;
+      const cm = editors.css;
+      cm.operation(() => {
+        const doc = cm.getDoc();
+        const end = doc.posFromIndex(doc.getValue().length);
+        doc.replaceRange(additions, end);
+      });
       setStatus('Auto CSS-Stubs ergänzt.');
     }
   }
 
   // Auto-run
-  [els.html, els.css, els.js].forEach(area => {
-    area.addEventListener('input', () => {
-      if (area === els.html) ensureCSSStubs();
+  editorKeys.forEach(key => {
+    editors[key].on('change', (cm, change) => {
+      if (change && change.origin === 'setValue') return;
+      if (key === 'html') ensureCSSStubs();
       if (!els.autoRun.checked) return;
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(render, 400);
@@ -117,9 +166,9 @@ document.getElementById('clickme')?.addEventListener('click', () => {
   els.newBtn.addEventListener('click', () => {
     if (!confirm('Aktuelles Snippet verwerfen und ein neues leeres erstellen?')) return;
     currentKey = '';
-    els.html.value = '';
-    els.css.value = '';
-    els.js.value = '';
+    editors.html.setValue('');
+    editors.css.setValue('');
+    editors.js.setValue('');
     autoAdded.clear();
     setStatus('Neu gestartet.');
     if (els.autoRun.checked) render();
@@ -145,9 +194,9 @@ document.getElementById('clickme')?.addEventListener('click', () => {
     if (!name) return;
     const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     items[name] = {
-      html: els.html.value,
-      css: els.css.value,
-      js: els.js.value,
+      html: editors.html.getValue(),
+      css: editors.css.getValue(),
+      js: editors.js.getValue(),
       updated: Date.now()
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
@@ -161,7 +210,9 @@ document.getElementById('clickme')?.addEventListener('click', () => {
     const it = items[name];
     if (!it) { setStatus('Snippet nicht gefunden.'); return; }
     currentKey = name;
-    els.html.value = it.html; els.css.value = it.css; els.js.value = it.js;
+    editors.html.setValue(it.html);
+    editors.css.setValue(it.css);
+    editors.js.setValue(it.js);
     autoAdded.clear();
     setStatus(`Geladen: “${name}”.`);
     render();
@@ -216,9 +267,9 @@ document.getElementById('clickme')?.addEventListener('click', () => {
 
   // Build preview doc
   function buildDocument(){
-    const html = els.html.value;
-    const css = els.css.value;
-    const js = els.js.value;
+    const html = editors.html.getValue();
+    const css = editors.css.getValue();
+    const js = editors.js.getValue();
 
     const inspectorScript = `
       (function(){
@@ -376,19 +427,29 @@ ${js}
 
   // Bootstrap
   function bootstrap(){
-    els.html.value = STARTER.html;
-    els.css.value  = STARTER.css;
-    els.js.value   = STARTER.js;
+    editors.html.setValue(STARTER.html);
+    editors.css.setValue(STARTER.css);
+    editors.js.setValue(STARTER.js);
     listSnippets();
 
     // initial auto-stubs for starter
-    const cssBefore = els.css.value;
+    const htmlValue = editors.html.getValue();
+    const cssBefore = editors.css.getValue();
     const m = /class\s*=\s*["']([^"']+)["']/gi;
     const s = new Set();
-    let k; while((k=m.exec(els.html.value))){ k[1].split(/\s+/).forEach(x=>x && s.add(x)); }
+    let k;
+    while((k = m.exec(htmlValue))){
+      k[1].split(/\s+/).forEach(x => x && s.add(x));
+    }
     const toAdd = Array.from(s).filter(c => !new RegExp('(^|[\\s\\}])\\.'+c.replace(/[-/\\^$*+?.()|[\\]{}]/g,'\\$&')+'\\s*(?=[\\{,:])').test(cssBefore));
     if (toAdd.length){
-      els.css.value += toAdd.map(c => `\n\n/* Stub automatisch angelegt */\n.${c} {\n  /* TODO: Styles */\n}`).join('');
+      const cm = editors.css;
+      const addition = toAdd.map(c => `\n\n/* Stub automatisch angelegt */\n.${c} {\n  /* TODO: Styles */\n}`).join('');
+      cm.operation(() => {
+        const doc = cm.getDoc();
+        const end = doc.posFromIndex(doc.getValue().length);
+        doc.replaceRange(addition, end);
+      });
       toAdd.forEach(c => autoAdded.add(c));
     }
     render();
