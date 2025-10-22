@@ -129,6 +129,7 @@ document.getElementById('clickme')?.addEventListener('click', () => {
   };
 
   let debounceTimer = null;
+  let stubTimer = null;
   let currentKey = '';
   const autoAdded = new Set();
 
@@ -166,7 +167,6 @@ document.getElementById('clickme')?.addEventListener('click', () => {
     return re.test(css);
   }
   function ensureCSSStubs(){
-    if (!els.autoStubs.checked) return;
     const html = editors.html.getValue();
     const css = editors.css.getValue();
     const classes = extractClassesFromHTML(html);
@@ -192,11 +192,19 @@ document.getElementById('clickme')?.addEventListener('click', () => {
     }
   }
 
+  function scheduleEnsureCSSStubs(){
+    if (!els.autoStubs.checked) return;
+    clearTimeout(stubTimer);
+    stubTimer = setTimeout(() => {
+      ensureCSSStubs();
+    }, 400);
+  }
+
   // Auto-run
   editorKeys.forEach(key => {
     editors[key].on('change', (cm, change) => {
       if (change && change.origin === 'setValue') return;
-      if (key === 'html') ensureCSSStubs();
+      if (key === 'html') scheduleEnsureCSSStubs();
       if (!els.autoRun.checked) return;
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(render, 400);
@@ -429,6 +437,8 @@ ${js}
   }
 
   function render(){
+    clearTimeout(stubTimer);
+    if (els.autoStubs.checked) ensureCSSStubs();
     const doc = buildDocument();
     const blob = new Blob([doc], { type: 'text/html' });
     els.frame.src = URL.createObjectURL(blob);
