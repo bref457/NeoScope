@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NeoScope</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot" aria-hidden="true"></span>
+        <strong>NeoScope</strong>
+      </div>
+      <div class="actions">
+        <button id="runBtn" class="primary">▶ Run</button>
+        <label class="switch">
+          <input type="checkbox" id="autoRun" checked />
+          <span>Auto-Run</span>
+        </label>
+        <label class="switch" title="HTML-Klassen automatisch als CSS-Stubs anlegen">
+          <input type="checkbox" id="autoStubs" checked />
+          <span>Auto CSS-Stubs</span>
+        </label>
+        <button id="inspectBtn" class="ghost" title="Einfacher Inspektor (F12-light)">🕵 Inspect</button>
+        <button id="newBtn">Neu</button>
+        <button id="saveBtn">Speichern</button>
+        <select id="loadSelect"><option value="">⤓ Laden…</option></select>
+        <button id="deleteBtn" title="Gewählten Schnipsel löschen">Löschen</button>
+        <button id="exportBtn">Export .html</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="editors">
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-target="html">HTML</button>
+          <button class="tab" data-target="css">CSS</button>
+          <button class="tab" data-target="js">JS</button>
+        </div>
+        <div class="panes">
+          <textarea id="html" class="pane active" spellcheck="false"></textarea>
+          <textarea id="css" class="pane" spellcheck="false"></textarea>
+          <textarea id="js" class="pane" spellcheck="false"></textarea>
+        </div>
+      </section>
+
+      <section class="preview">
+        <iframe id="frame" title="Live Preview" sandbox="allow-scripts allow-same-origin"></iframe>
+        <details class="console" open>
+          <summary>Konsole</summary>
+          <div id="consoleOutput" class="console-output"></div>
+        </details>
+      </section>
+    </main>
+
+    <footer class="statusbar">
+      <span id="status">Bereit</span>
+      <span class="kbd">Ctrl/Cmd + S = Save · Ctrl/Cmd + Enter = Run · Ctrl/Cmd + I = Inspect</span>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
