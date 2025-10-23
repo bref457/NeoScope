@@ -6,6 +6,7 @@ NeoScope ist ein schlankes, komplett clientseitiges Playground-Tool für HTML, C
 - **Syntax-Highlighting**: CodeMirror (Material-Darker) sorgt für ein VS-Code-ähnliches Farbschema direkt im Browser (bei fehlender CDN-Verbindung fällt NeoScope automatisch auf die klassischen Textareas zurück).
 - **Live-Preview**: Auto-Run (abschaltbar) rendert deine Änderungen sofort im iFrame.
 - **Auto CSS-Stubs**: Neue Klassen aus dem HTML erhalten auf Wunsch automatisch CSS-Platzhalter.
+- **CSS-Stubs-Button**: Mit einem Klick („CSS-Stubs“) alle neuen Klassen gezielt übernehmen – ideal, wenn Auto-Stubs deaktiviert sind.
 - **Snippet-Verwaltung**: Lokale Speicherfunktion zum Anlegen, Laden und Löschen eigener Code-Schnipsel.
 - **Export & Inspect**: HTML-Export auf Knopfdruck sowie ein leichter Inspektionsmodus für DOM-Elemente.
 

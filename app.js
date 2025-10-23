@@ -18,6 +18,7 @@
     deleteBtn: $('#deleteBtn'),
     exportBtn: $('#exportBtn'),
     inspectBtn: $('#inspectBtn'),
+    stubBtn: $('#stubBtn'),
   };
 
   const textareas = {
@@ -166,16 +167,22 @@ document.getElementById('clickme')?.addEventListener('click', () => {
     const re = new RegExp('(^|[\\s\\}])\\.' + esc + '\\s*(?=[\\{,:])');
     return re.test(css);
   }
-  function ensureCSSStubs(){
+  function ensureCSSStubs(source = 'auto'){
     const html = editors.html.getValue();
     const css = editors.css.getValue();
     const classes = extractClassesFromHTML(html);
     let additions = '';
+    let added = 0;
     for (const c of classes){
       if (!cssHasClassRule(css, c) && !autoAdded.has(c)){
         additions += `\n\n/* Stub automatisch angelegt */\n.${c} {\n  /* TODO: Styles */\n}`;
         autoAdded.add(c);
+        added += 1;
       }
+    }
+    if (!added){
+      if (source === 'manual') setStatus('Keine neuen CSS-Stubs nötig.');
+      return false;
     }
     if (additions){
       const editor = editors.css;
@@ -188,8 +195,11 @@ document.getElementById('clickme')?.addEventListener('click', () => {
       } else {
         editor.setValue(editor.getValue() + additions);
       }
-      setStatus('Auto CSS-Stubs ergänzt.');
+      setStatus(source === 'manual'
+        ? (added === 1 ? '1 CSS-Stub ergänzt.' : `${added} CSS-Stubs ergänzt.`)
+        : 'Auto CSS-Stubs ergänzt.');
     }
+    return true;
   }
 
   function scheduleEnsureCSSStubs(){
@@ -288,6 +298,9 @@ document.getElementById('clickme')?.addEventListener('click', () => {
     const name = els.loadSelect.value || currentKey;
     if (!name) { alert('Kein Snippet ausgewählt.'); return; }
     deleteSnippet(name);
+  });
+  els.stubBtn?.addEventListener('click', () => {
+    ensureCSSStubs('manual');
   });
 
   // Export Single HTML
