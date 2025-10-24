@@ -8,7 +8,7 @@ NeoScope ist ein schlankes, komplett clientseitiges Playground-Tool für HTML, C
 - **Auto CSS-Stubs**: Neue Klassen aus dem HTML erhalten auf Wunsch automatisch CSS-Platzhalter.
 - **CSS-Stubs-Button**: Mit einem Klick („CSS-Stubs“) alle neuen Klassen gezielt übernehmen – ideal, wenn Auto-Stubs deaktiviert sind.
 - **Snippet-Verwaltung**: Lokale Speicherfunktion zum Anlegen, Laden und Löschen eigener Code-Schnipsel.
-- **Export & Inspect**: HTML-Export auf Knopfdruck sowie ein leichter Inspektionsmodus für DOM-Elemente.
+- **Export & Inspect**: HTML-Export auf Knopfdruck – die erzeugte Datei enthält dein CSS & JS inline – plus ein leichter Inspektionsmodus für DOM-Elemente.
 
 ## Schnellstart
 

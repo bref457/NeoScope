@@ -384,7 +384,7 @@ document.getElementById('clickme')?.addEventListener('click', () => {
     a.download = fn;
     a.click();
     URL.revokeObjectURL(a.href);
-    setStatus(`Exportiert: ${fn}`);
+    setStatus(`${fn} enthält HTML, CSS & JS.`);
   });
 
   // Inspect toggle
