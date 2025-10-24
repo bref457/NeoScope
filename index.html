@@ -75,6 +75,18 @@
       </section>
     </main>
 
+    <div class="modal" id="saveDialog" hidden>
+      <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="saveDialogTitle">
+        <h2 id="saveDialogTitle">Snippet speichern</h2>
+        <p class="modal__hint">Gib einen Namen ein oder behalte den bestehenden bei.</p>
+        <input type="text" id="saveNameInput" class="modal__input" autocomplete="off" />
+        <div class="modal__actions">
+          <button type="button" id="saveCancelBtn" class="ghost">Abbrechen</button>
+          <button type="button" id="saveConfirmBtn" class="primary">Speichern</button>
+        </div>
+      </div>
+    </div>
+
     <footer class="statusbar">
       <span id="status">Bereit</span>
       <span class="kbd">Ctrl/Cmd + S = Save · Ctrl/Cmd + Enter = Run · Ctrl/Cmd + I = Inspect</span>

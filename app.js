@@ -19,6 +19,10 @@
     exportBtn: $('#exportBtn'),
     inspectBtn: $('#inspectBtn'),
     stubBtn: $('#stubBtn'),
+    saveDialog: $('#saveDialog'),
+    saveNameInput: $('#saveNameInput'),
+    saveConfirmBtn: $('#saveConfirmBtn'),
+    saveCancelBtn: $('#saveCancelBtn'),
   };
 
   const textareas = {
@@ -202,6 +206,65 @@ document.getElementById('clickme')?.addEventListener('click', () => {
     return true;
   }
 
+  function promptSaveName(defaultValue){
+    if (!els.saveDialog || !els.saveNameInput || !els.saveConfirmBtn || !els.saveCancelBtn){
+      const fallback = window.prompt('Name für Snippet:', defaultValue || '');
+      const trimmed = fallback ? fallback.trim() : '';
+      return Promise.resolve(trimmed || null);
+    }
+    return new Promise(resolve => {
+      const dialog = els.saveDialog;
+      const input = els.saveNameInput;
+      const okBtn = els.saveConfirmBtn;
+      const cancelBtn = els.saveCancelBtn;
+
+      function cleanup(result){
+        dialog.hidden = true;
+        okBtn.removeEventListener('click', onConfirm);
+        cancelBtn.removeEventListener('click', onCancel);
+        dialog.removeEventListener('click', onBackdrop);
+        dialog.removeEventListener('keydown', onKey);
+        resolve(result);
+      }
+      function onConfirm(){
+        const value = input.value.trim();
+        if (!value){
+          input.focus();
+          input.select();
+          return;
+        }
+        cleanup(value);
+      }
+      function onCancel(){
+        cleanup(null);
+      }
+      function onBackdrop(e){
+        if (e.target === dialog) onCancel();
+      }
+      function onKey(e){
+        if (e.key === 'Escape'){
+          e.preventDefault();
+          onCancel();
+        }
+        if (e.key === 'Enter'){
+          e.preventDefault();
+          onConfirm();
+        }
+      }
+
+      input.value = defaultValue || '';
+      dialog.hidden = false;
+      dialog.addEventListener('click', onBackdrop);
+      dialog.addEventListener('keydown', onKey);
+      okBtn.addEventListener('click', onConfirm);
+      cancelBtn.addEventListener('click', onCancel);
+      setTimeout(() => {
+        input.focus();
+        input.select();
+      }, 15);
+    });
+  }
+
   function scheduleEnsureCSSStubs(){
     if (!els.autoStubs.checked) return;
     clearTimeout(stubTimer);
@@ -249,9 +312,18 @@ document.getElementById('clickme')?.addEventListener('click', () => {
     });
   }
 
-  function saveSnippet() {
-    let name = currentKey || prompt('Name für Snippet:');
-    if (!name) return;
+  async function saveSnippet() {
+    const suggested = currentKey || '';
+    const nameInput = await promptSaveName(suggested);
+    if (!nameInput) {
+      setStatus('Speichern abgebrochen.');
+      return;
+    }
+    const name = nameInput.trim();
+    if (!name) {
+      setStatus('Ungültiger Name.');
+      return;
+    }
     const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     items[name] = {
       html: editors.html.getValue(),
@@ -262,7 +334,7 @@ document.getElementById('clickme')?.addEventListener('click', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     currentKey = name;
     listSnippets();
-    setStatus(`Gespeichert als “${name}”.`);
+    setStatus(`Gespeichert als "${name}".`);
   }
 
   function loadSnippet(name) {
@@ -523,10 +595,6 @@ ${js}
     }
     render();
   }
-
-  // Storage helpers
-  function saveSnippet(){ /* defined above via closure, keep order */ }
-  function listSnippets(){ /* defined above via closure, keep order */ }
 
   // Re-bind real fns (already defined above)
   // (JS hoisting note: functions are function-scoped; the earlier references work.)
